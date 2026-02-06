@@ -42,11 +42,11 @@ const Home = () => {
     setIsTyping(true);
 
     try {
-      const response = await fetch("http://localhost:5000/api/chat/send", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: chatInput }),
-      });
+      const response = await fetch("https://cellphones-backend.onrender.com/api/chat/send", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({ message: chatInput }),
+});
       const data = await response.json();
       setChatMessages((prev) => [...prev, { role: "ai", text: data.reply }]);
     } catch (error) {
