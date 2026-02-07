@@ -20,6 +20,26 @@ const Home = () => {
   const [showCategoryMenu, setShowCategoryMenu] = useState(false);
   const [loading, setLoading] = useState(true);
 
+  // --- LẤY THÔNG TIN USER TỪ LOCALSTORAGE ---
+  const [user, setUser] = useState(() => {
+    const savedUser = localStorage.getItem("user");
+    return savedUser ? JSON.parse(savedUser) : null;
+  });
+
+  // --- LOGIC CHẶN ADMIN/STAFF TRUY CẬP HOME ---
+  useEffect(() => {
+    if (user) {
+      const roleId = Number(user.role_id);
+      if (roleId === 1) {
+        // Nếu là Admin, điều hướng ngay lập tức về trang quản trị
+        navigate("/admin", { replace: true });
+      } else if (roleId === 2) {
+        // Nếu là Staff, điều hướng về trang đơn hàng
+        navigate("/staff/orders", { replace: true });
+      }
+    }
+  }, [user, navigate]);
+
   // --- LOGIC CHAT BOX AI ---
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [chatMessages, setChatMessages] = useState([
@@ -42,7 +62,6 @@ const Home = () => {
     setIsTyping(true);
 
     try {
-      // SỬA TẠI ĐÂY: Tự động dùng localhost khi dev và Render khi build
       const baseUrl = import.meta.env.VITE_API_URL || "https://cellphones-backend.onrender.com/api";
       const response = await fetch(`${baseUrl}/chat/send`, {
         method: "POST",
@@ -64,12 +83,6 @@ const Home = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedBrandId, setSelectedBrandId] = useState(null);
   const [selectedCategoryId, setSelectedCategoryId] = useState(null);
-
-  // --- LẤY THÔNG TIN USER TỪ LOCALSTORAGE ---
-  const [user, setUser] = useState(() => {
-    const savedUser = localStorage.getItem("user");
-    return savedUser ? JSON.parse(savedUser) : null;
-  });
 
   useEffect(() => {
     const fetchData = async () => {
@@ -133,6 +146,21 @@ const Home = () => {
     return themes[brandName] || { hex: "#e0e0e0", rgb: "224, 224, 224" };
   };
 
+  const getCategoryIcon = (name) => {
+    if (name.includes("thoại")) return "📱 ";
+    if (name.includes("Laptop")) return "💻 ";
+    if (name.includes("Âm thanh") || name.includes("Loa") || name.includes("Tai nghe")) return "🎧 ";
+    if (name.includes("Màn hình")) return "🖥️ ";
+    if (name.includes("Phụ kiện") || name.includes("Sạc")) return "🔌 ";
+    if (name.includes("Đồng hồ")) return "⌚ ";
+    return "📦 ";
+  };
+
+  // NẾU LÀ ADMIN HOẶC STAFF, KHÔNG HIỂN THỊ GIAO DIỆN HOME
+  if (user && (Number(user.role_id) === 1 || Number(user.role_id) === 2)) {
+    return null; 
+  }
+
   return (
     <div className="home">
       {/* HEADER */}
@@ -168,7 +196,7 @@ const Home = () => {
                       className={`category-item ${selectedCategoryId === cat.id ? "active" : ""}`}
                       onClick={() => handleCategorySelect(cat.id)}
                     >
-                      <span className="cat-name">{cat.name}</span>
+                      <span className="cat-name">{getCategoryIcon(cat.name)}{cat.name}</span>
                       <span className="cat-arrow">›</span>
                     </li>
                   ))}
@@ -214,8 +242,7 @@ const Home = () => {
                 onClick={() => handleCategorySelect(cat.id)}
                 className={selectedCategoryId === cat.id ? "active-category" : ""}
               >
-                {cat.name.includes("thoại") ? "📱 " : cat.name.includes("Laptop") ? "💻 " : "📦 "}
-                {cat.name}
+                {getCategoryIcon(cat.name)} {cat.name}
               </p>
             ))}
           </aside>
@@ -353,8 +380,8 @@ const Home = () => {
       {/* --- GIAO DIỆN CHAT BOX AI --- */}
       <div className="ai-chat-widget">
         <div className="ai-chat-bubble" onClick={() => setIsChatOpen(!isChatOpen)}>
-           <img src="https://cdn-icons-png.flaticon.com/512/4712/4712035.png" alt="AI" />
-           {!isChatOpen && <div className="chat-tooltip">Hỏi Cellphones AI</div>}
+            <img src="https://cdn-icons-png.flaticon.com/512/4712/4712035.png" alt="AI" />
+            {!isChatOpen && <div className="chat-tooltip">Hỏi Cellphones AI</div>}
         </div>
 
         {isChatOpen && (
@@ -439,6 +466,65 @@ const Home = () => {
         .ai-chat-footer input { flex: 1; border: 1px solid #ddd; padding: 8px 12px; border-radius: 20px; outline: none; font-size: 14px; }
         .ai-chat-footer button { background: #d70018; color: white; border: none; width: 35px; height: 35px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; }
       `}</style>
+
+      {/* FOOTER */}
+      <footer className="footer-main">
+        <div className="container">
+          <div className="footer-grid">
+            <div className="footer-col">
+              <h3 className="footer-title">Tổng đài hỗ trợ miễn phí</h3>
+              <ul className="footer-list">
+                <li>Gọi mua hàng: <a href="tel:18002097"><strong>1800.2097</strong></a> (7h30 - 22h00)</li>
+                <li>Khiếu nại: <a href="tel:18002063"><strong>1800.2063</strong></a> (8h00 - 21h30)</li>
+                <li>Bảo hành: <a href="tel:18002064"><strong>1800.2064</strong></a> (8h00 - 21h00)</li>
+              </ul>
+              <h3 className="footer-title mt-20">Phương thức thanh toán</h3>
+              <div className="payment-methods">
+                <img src="https://cellphones.com.vn/media/wysiwyg/apple-pay-og.png" alt="Apple Pay" />
+                <img src="https://cellphones.com.vn/media/logo/payment/vnpay-logo.png" alt="VNPAY" />
+                <img src="https://cellphones.com.vn/media/logo/payment/momo_icon.png" alt="Momo" />
+              </div>
+            </div>
+
+            <div className="footer-col">
+              <h3 className="footer-title">Thông tin và chính sách</h3>
+              <ul className="footer-list">
+                <li><a href="#">Mua hàng và thanh toán Online</a></li>
+                <li><a href="#">Chính sách giao hàng</a></li>
+                <li><a href="#">Tra thông tin bảo hành</a></li>
+                <li><a href="#">Chính sách bảo mật</a></li>
+              </ul>
+            </div>
+
+            <div className="footer-col">
+              <h3 className="footer-title">Dịch vụ và thông tin khác</h3>
+              <ul className="footer-list">
+                <li><a href="#">Khách hàng doanh nghiệp (B2B)</a></li>
+                <li><a href="#">Ưu đãi thanh toán</a></li>
+                <li><a href="#">Quy chế hoạt động</a></li>
+                <li><a href="#">Tuyển dụng</a></li>
+              </ul>
+            </div>
+
+            <div className="footer-col">
+              <h3 className="footer-title">Kết nối với chúng tôi</h3>
+              <div className="social-group">
+                <a href="#" className="social-icon fb"></a>
+                <a href="#" className="social-icon yt"></a>
+                <a href="#" className="social-icon zl"></a>
+              </div>
+              <div className="certification mt-20">
+                <img src="https://cellphones.com.vn/media/logo/logoSaleNoti.png" alt="Bộ công thương" className="bct-img" />
+              </div>
+            </div>
+          </div>
+        </div>
+        <div className="footer-bottom">
+          <div className="container">
+            <p>© 2026. Công ty TNHH Thương mại và Dịch vụ Kỹ thuật CellphoneS. GPDKKD: 0123456789 do Sở KH&ĐT TP.HCM cấp.</p>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 };

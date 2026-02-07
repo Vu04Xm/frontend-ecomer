@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axiosClient from "../../../api/axiosClient";
-import { User, Lock, Save, ShieldCheck, Phone, Mail, UserCircle, Settings } from 'lucide-react';
-import toast, { Toaster } from 'react-hot-toast'; // Import Toast
+import { User, Lock, Save, ShieldCheck, Phone, Mail, UserCircle, Settings, LogOut } from 'lucide-react'; // Thêm LogOut icon
+import toast, { Toaster } from 'react-hot-toast';
 
 const Profilestaff = () => {
   const navigate = useNavigate();
@@ -35,6 +35,16 @@ const Profilestaff = () => {
       });
     }
   }, [navigate]);
+
+  // Hàm xử lý đăng xuất
+  const handleLogout = () => {
+    localStorage.removeItem('user');
+    localStorage.removeItem('token');
+    toast.success('Đã đăng xuất thành công');
+    setTimeout(() => {
+      navigate('/login');
+    }, 1000);
+  };
 
   const handleUpdateInfo = async (e) => {
     e.preventDefault();
@@ -75,7 +85,6 @@ const Profilestaff = () => {
 
   return (
     <div className="p-8 bg-[#f8fafc] min-h-screen font-['Inter']">
-      {/* Component này để hiển thị thông báo toast */}
       <Toaster position="top-right" reverseOrder={false} />
 
       {/* HEADER SECTION */}
@@ -88,27 +97,37 @@ const Profilestaff = () => {
           <p className="text-slate-500 text-sm font-semibold mt-1">Quản lý thông tin tài khoản và bảo mật</p>
         </div>
 
-        {/* --- THANH NAV TABS --- */}
-        <div className="flex bg-slate-200/50 p-1.5 rounded-2xl w-fit border border-slate-200">
+        {/* THANH NAV TABS & LOGOUT */}
+        <div className="flex items-center gap-4">
+          <div className="flex bg-slate-200/50 p-1.5 rounded-2xl w-fit border border-slate-200">
+            <button 
+              onClick={() => setActiveTab('profile')}
+              className={`flex items-center gap-2 px-6 py-3 rounded-xl text-xs font-black transition-all ${
+                activeTab === 'profile' 
+                ? 'bg-white text-red-600 shadow-sm' 
+                : 'text-slate-500 hover:text-slate-700'
+              }`}
+            >
+              <User size={16} /> THÔNG TIN
+            </button>
+            <button 
+              onClick={() => setActiveTab('password')}
+              className={`flex items-center gap-2 px-6 py-3 rounded-xl text-xs font-black transition-all ${
+                activeTab === 'password' 
+                ? 'bg-slate-900 text-white shadow-sm' 
+                : 'text-slate-500 hover:text-slate-700'
+              }`}
+            >
+              <Lock size={16} /> MẬT KHẨU
+            </button>
+          </div>
+
+          {/* NÚT ĐĂNG XUẤT THÊM MỚI */}
           <button 
-            onClick={() => setActiveTab('profile')}
-            className={`flex items-center gap-2 px-6 py-3 rounded-xl text-xs font-black transition-all ${
-              activeTab === 'profile' 
-              ? 'bg-white text-red-600 shadow-sm' 
-              : 'text-slate-500 hover:text-slate-700'
-            }`}
+            onClick={handleLogout}
+            className="flex items-center gap-2 px-6 py-4 rounded-2xl bg-white border border-slate-200 text-slate-600 text-xs font-black hover:bg-red-50 hover:text-red-600 hover:border-red-200 transition-all shadow-sm active:scale-95 uppercase"
           >
-            <User size={16} /> THÔNG TIN
-          </button>
-          <button 
-            onClick={() => setActiveTab('password')}
-            className={`flex items-center gap-2 px-6 py-3 rounded-xl text-xs font-black transition-all ${
-              activeTab === 'password' 
-              ? 'bg-slate-900 text-white shadow-sm' 
-              : 'text-slate-500 hover:text-slate-700'
-            }`}
-          >
-            <Lock size={16} /> MẬT KHẨU
+            <LogOut size={16} /> Đăng xuất
           </button>
         </div>
       </div>
