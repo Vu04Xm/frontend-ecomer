@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import axiosClient from "../../api/axiosClient";
-import ReactMarkdown from "react-markdown"; // --- THÊM DÒNG NÀY ---
+import ReactMarkdown from "react-markdown";
 
 // Import Swiper
 import { Swiper, SwiperSlide } from "swiper/react";
@@ -42,14 +42,18 @@ const Home = () => {
     setIsTyping(true);
 
     try {
-      const response = await fetch("https://cellphones-backend.onrender.com/api/chat/send", {
-  method: "POST",
-  headers: { "Content-Type": "application/json" },
-  body: JSON.stringify({ message: chatInput }),
-});
+      // SỬA TẠI ĐÂY: Tự động dùng localhost khi dev và Render khi build
+      const baseUrl = import.meta.env.VITE_API_URL || "https://cellphones-backend.onrender.com/api";
+      const response = await fetch(`${baseUrl}/chat/send`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: chatInput }),
+      });
+      
       const data = await response.json();
       setChatMessages((prev) => [...prev, { role: "ai", text: data.reply }]);
     } catch (error) {
+      console.error("Lỗi Chat AI:", error);
       setChatMessages((prev) => [...prev, { role: "ai", text: "Xin lỗi, kết nối của mình bị gián đoạn. Thử lại sau nhé!" }]);
     } finally {
       setIsTyping(false);
@@ -367,7 +371,6 @@ const Home = () => {
               {chatMessages.map((msg, idx) => (
                 <div key={idx} className={`ai-message-row ${msg.role === "user" ? "user" : "ai"}`}>
                   <div className="ai-message-bubble">
-                    {/* --- DÙNG REACT MARKDOWN Ở ĐÂY --- */}
                     {msg.role === "ai" ? (
                       <ReactMarkdown>{msg.text}</ReactMarkdown>
                     ) : (
@@ -424,7 +427,6 @@ const Home = () => {
         .ai-message-row.user .ai-message-bubble { background: #d70018; color: white; border-bottom-right-radius: 2px; }
         .ai-message-row.ai .ai-message-bubble { background: #eee; color: #333; border-bottom-left-radius: 2px; }
 
-        /* --- STYLE CHO MARKDOWN (DẤU SAO) --- */
         .ai-message-bubble p { margin: 0 0 8px 0; }
         .ai-message-bubble p:last-child { margin-bottom: 0; }
         .ai-message-bubble ul { margin: 5px 0; padding-left: 20px; }
